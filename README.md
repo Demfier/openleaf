@@ -39,7 +39,7 @@
 ## Install
 
 ### Option 1: Chrome Web Store
-[Link coming soon]
+[openleaf extension link](https://chromewebstore.google.com/detail/openleaf-citation-search/jjcmeicpmfcimamdmchabfpjcljieafk)
 
 ### Option 2: Download ZIP (no npm needed)
 1. Download [`openleaf-extension-v0.1.0.zip`](https://github.com/demfier/openleaf/releases/download/v0.1.0/openleaf-extension-v0.1.0.zip) from [Releases](https://github.com/demfier/openleaf/releases)
