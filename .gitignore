@@ -1,0 +1,11 @@
+node_modules/
+dist/
+*.crx
+*.pem
+*.zip
+.DS_Store
+.env*
+promo/*.pptx
+promo/~$*
+promo/*.pdf
+promo/*.mov

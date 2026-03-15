@@ -1,0 +1,445 @@
+/* FAB */
+#openleaf-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 99999;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: #4f9c45;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s, box-shadow 0.15s;
+  padding: 0;
+}
+#openleaf-fab:hover {
+  transform: scale(1.08);
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.35);
+}
+#openleaf-fab svg {
+  width: 22px;
+  height: 22px;
+  fill: white;
+}
+
+/* Panel — matches Overleaf's dark theme */
+#openleaf-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 380px;
+  height: 100vh;
+  z-index: 100000;
+  background: var(--bg-dark-primary, #1b222c);
+  color: var(--content-primary-dark, #c5c8cf);
+  font-family: 'Noto Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+#openleaf-panel.openleaf-hidden {
+  display: none;
+}
+
+/* Header */
+.openleaf-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--bg-dark-secondary, #252b35);
+  border-bottom: 1px solid var(--border-divider-dark, #3c4251);
+}
+.openleaf-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--green-50, #b4d989);
+}
+.openleaf-close {
+  background: none;
+  border: none;
+  color: var(--content-secondary-dark, #7e8595);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+.openleaf-close:hover {
+  color: var(--content-primary-dark, #c5c8cf);
+}
+
+/* Tabs */
+.openleaf-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-divider-dark, #3c4251);
+}
+.openleaf-tab {
+  flex: 1;
+  padding: 8px 0;
+  border: none;
+  background: none;
+  color: var(--content-secondary-dark, #7e8595);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+.openleaf-tab:hover {
+  color: var(--content-primary-dark, #c5c8cf);
+}
+.openleaf-tab-active {
+  color: #4f9c45;
+  border-bottom-color: #4f9c45;
+}
+
+/* Toolbar */
+.openleaf-toolbar {
+  display: flex;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-divider-dark, #3c4251);
+}
+
+/* Buttons */
+.openleaf-btn {
+  padding: 6px 14px;
+  border-radius: 4px;
+  border: 1px solid var(--border-divider-dark, #3c4251);
+  background: var(--bg-dark-secondary, #252b35);
+  color: var(--content-primary-dark, #c5c8cf);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+}
+.openleaf-btn:hover {
+  background: var(--bg-dark-tertiary, #3c4251);
+}
+.openleaf-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.openleaf-btn-primary {
+  background: #4f9c45;
+  border-color: transparent;
+  color: white;
+  flex: 1;
+}
+.openleaf-btn-primary:hover {
+  background: #438a3a;
+}
+
+/* Error */
+.openleaf-error {
+  padding: 8px 14px;
+  color: #e06c75;
+  font-size: 12px;
+  background: rgba(224, 108, 117, 0.08);
+  border-bottom: 1px solid var(--border-divider-dark, #3c4251);
+}
+
+/* Results */
+.openleaf-results {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Loading / Empty / Progress */
+.openleaf-loading,
+.openleaf-empty {
+  text-align: center;
+  padding: 32px 20px;
+  color: var(--content-secondary-dark, #7e8595);
+}
+.openleaf-progress {
+  text-align: center;
+  padding: 12px 20px 20px;
+  color: var(--content-secondary-dark, #7e8595);
+  font-size: 12px;
+  animation: openleaf-pulse 1.5s ease-in-out infinite;
+}
+@keyframes openleaf-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+.openleaf-empty-icon {
+  font-size: 36px;
+  margin-bottom: 8px;
+  opacity: 0.6;
+}
+.openleaf-empty-title {
+  font-weight: 600;
+  color: var(--content-primary-dark, #c5c8cf);
+  margin-bottom: 4px;
+}
+.openleaf-empty-desc {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Paragraph sections */
+.openleaf-para {
+  border-bottom: 1px solid var(--border-divider-dark, #3c4251);
+}
+.openleaf-para-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--content-primary-dark, #c5c8cf);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+}
+.openleaf-para-header:hover {
+  background: var(--bg-dark-secondary, #252b35);
+}
+.openleaf-arrow {
+  font-family: monospace;
+  width: 12px;
+  color: var(--content-secondary-dark, #7e8595);
+}
+.openleaf-para-label {
+  flex: 1;
+}
+.openleaf-badge {
+  background: var(--bg-dark-tertiary, #3c4251);
+  color: var(--green-50, #b4d989);
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 11px;
+}
+.openleaf-para-body.openleaf-hidden {
+  display: none;
+}
+.openleaf-para-preview {
+  padding: 0 14px 8px 32px;
+  font-size: 11px;
+  color: var(--content-secondary-dark, #7e8595);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Cards */
+.openleaf-card {
+  margin: 0 10px 8px 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-divider-dark, #3c4251);
+  border-radius: 4px;
+  background: var(--bg-dark-secondary, #252b35);
+}
+.openleaf-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--content-primary-dark, #c5c8cf);
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+.openleaf-card-title a {
+  color: inherit;
+  text-decoration: none;
+}
+.openleaf-card-title a:hover {
+  color: var(--green-50, #b4d989);
+  text-decoration: underline;
+}
+.openleaf-card-title a:visited {
+  color: #a78bfa;
+}
+.openleaf-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--content-secondary-dark, #7e8595);
+  margin-bottom: 4px;
+}
+.openleaf-score {
+  color: #34d399;
+  font-weight: 700;
+}
+.openleaf-card-abstract {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--content-secondary-dark, #7e8595);
+  margin: 4px 0;
+}
+
+/* Info icon + reasoning toggle */
+.openleaf-info-wrap {
+  position: relative;
+}
+.openleaf-info-icon {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--content-secondary-dark, #7e8595);
+  vertical-align: middle;
+  user-select: none;
+}
+.openleaf-info-icon:hover {
+  color: var(--content-primary-dark, #c5c8cf);
+}
+.openleaf-info-wrap .openleaf-reasoning {
+  display: none;
+  margin-top: 8px;
+}
+.openleaf-info-wrap.openleaf-info-open .openleaf-reasoning {
+  display: block;
+}
+
+/* Reasoning panel */
+.openleaf-reasoning {
+  padding: 8px 10px;
+  background: var(--bg-dark-primary, #1b222c);
+  border-radius: 4px;
+  font-size: 11px;
+  line-height: 1.5;
+  border: 1px solid var(--border-divider-dark, #3c4251);
+}
+.openleaf-for {
+  color: #34d399;
+  margin-bottom: 5px;
+}
+.openleaf-against {
+  color: #fb7185;
+}
+.openleaf-icon-plus,
+.openleaf-icon-minus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  margin-right: 5px;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+.openleaf-icon-plus {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34d399;
+}
+.openleaf-icon-minus {
+  background: rgba(251, 113, 133, 0.15);
+  color: #fb7185;
+}
+.openleaf-reasoning-fallback {
+  color: var(--content-secondary-dark, #7e8595);
+  font-style: italic;
+}
+
+/* Actions */
+.openleaf-card-actions {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.openleaf-added-label {
+  color: var(--green-50, #b4d989);
+  font-weight: 600;
+  font-size: 12px;
+}
+.openleaf-card-link {
+  font-size: 11px;
+  color: var(--content-secondary-dark, #7e8595);
+  text-decoration: none;
+  margin-left: auto;
+}
+.openleaf-card-link:hover {
+  color: var(--green-50, #b4d989);
+  text-decoration: underline;
+}
+
+/* Review mode toggle */
+.openleaf-review-toolbar {
+  flex-direction: column;
+  gap: 8px;
+}
+.openleaf-mode-toggle {
+  display: flex;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--border-divider-dark, #3c4251);
+}
+.openleaf-mode-btn {
+  flex: 1;
+  padding: 6px 0;
+  border: none;
+  background: var(--bg-dark-primary, #1b222c);
+  color: var(--content-secondary-dark, #7e8595);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.openleaf-mode-btn:hover {
+  color: var(--content-primary-dark, #c5c8cf);
+}
+.openleaf-mode-active {
+  background: #4f9c45;
+  color: white;
+}
+.openleaf-mode-active.openleaf-mode-fire {
+  background: #dc2626;
+}
+
+/* Review content */
+.openleaf-review-text {
+  padding: 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--content-primary-dark, #c5c8cf);
+}
+.openleaf-review-text h1,
+.openleaf-review-text h2,
+.openleaf-review-text h3,
+.openleaf-review-text h4,
+.openleaf-review-text h5 {
+  color: #e2e8f0;
+  margin: 16px 0 8px;
+  line-height: 1.3;
+}
+.openleaf-review-text h1 { font-size: 18px; }
+.openleaf-review-text h2 { font-size: 16px; }
+.openleaf-review-text h3 { font-size: 14px; }
+.openleaf-review-text strong {
+  color: #e2e8f0;
+}
+.openleaf-review-text li {
+  margin-left: 16px;
+  margin-bottom: 4px;
+}
+.openleaf-review-text p {
+  margin-bottom: 8px;
+}
+
+/* Scrollbar */
+.openleaf-results::-webkit-scrollbar {
+  width: 6px;
+}
+.openleaf-results::-webkit-scrollbar-track {
+  background: transparent;
+}
+.openleaf-results::-webkit-scrollbar-thumb {
+  background: var(--bg-dark-tertiary, #3c4251);
+  border-radius: 3px;
+}

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1400px;
+    height: 560px;
+    background: #1b222c;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+  .left {
+    flex: 1;
+    padding: 60px 60px 60px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .logo-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .icon {
+    width: 56px;
+    height: 56px;
+    background: #4f9c45;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .icon svg { width: 28px; height: 28px; }
+  .logo-text {
+    font-size: 40px;
+    font-weight: 700;
+    color: #4f9c45;
+    letter-spacing: -1px;
+  }
+  .tagline {
+    font-size: 20px;
+    color: #9ca3af;
+    line-height: 1.5;
+    max-width: 500px;
+  }
+  .features {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .feature {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 16px;
+    color: #c5c8cf;
+  }
+  .feature-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .fi-search { background: rgba(79, 156, 69, 0.15); color: #4f9c45; }
+  .fi-rank { background: rgba(52, 211, 153, 0.15); color: #34d399; }
+  .fi-review { background: rgba(251, 113, 133, 0.15); color: #fb7185; }
+
+  .right {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+  .panel-mock {
+    width: 340px;
+    background: #252b35;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    overflow: hidden;
+    transform: perspective(800px) rotateY(-5deg);
+  }
+  .panel-header {
+    padding: 12px 16px;
+    background: #2a3040;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #3c4251;
+  }
+  .panel-title { color: #4f9c45; font-weight: 700; font-size: 14px; }
+  .panel-close { color: #7e8595; font-size: 18px; }
+  .panel-tabs {
+    display: flex;
+    border-bottom: 1px solid #3c4251;
+  }
+  .panel-tab {
+    flex: 1;
+    padding: 8px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #7e8595;
+  }
+  .panel-tab-active { color: #4f9c45; border-bottom: 2px solid #4f9c45; }
+  .panel-body { padding: 12px; }
+  .panel-btn {
+    width: 100%;
+    padding: 8px;
+    background: #4f9c45;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-weight: 600;
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+  .mock-card {
+    background: #1b222c;
+    border: 1px solid #3c4251;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 8px;
+  }
+  .mock-title { font-size: 12px; font-weight: 600; color: #c5c8cf; margin-bottom: 4px; }
+  .mock-meta { font-size: 10px; color: #7e8595; margin-bottom: 4px; }
+  .mock-score { color: #34d399; font-weight: 700; }
+  .mock-abstract { font-size: 10px; color: #7e8595; line-height: 1.3; }
+</style>
+</head>
+<body>
+  <div class="left">
+    <div class="logo-row">
+      <div class="icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="15" width="16" height="3.5" rx="0.8" fill="white"/>
+          <rect x="5" y="10.5" width="16" height="3.5" rx="0.8" fill="white"/>
+          <rect x="6" y="6" width="16" height="3.5" rx="0.8" fill="white"/>
+        </svg>
+      </div>
+      <span class="logo-text">OpenLeaf</span>
+    </div>
+    <div class="tagline">AI-powered citation search &amp; paper review for Overleaf</div>
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon fi-search">&#128269;</div>
+        Search 3 databases, paragraph by paragraph
+      </div>
+      <div class="feature">
+        <div class="feature-icon fi-rank">&#9432;</div>
+        LLM debate ranking with reasoning
+      </div>
+      <div class="feature">
+        <div class="feature-icon fi-review">&#128293;</div>
+        Reviewer #2 mode before submission
+      </div>
+    </div>
+  </div>
+  <div class="right">
+    <div class="panel-mock">
+      <div class="panel-header">
+        <span class="panel-title">OpenLeaf</span>
+        <span class="panel-close">&times;</span>
+      </div>
+      <div class="panel-tabs">
+        <div class="panel-tab panel-tab-active">Citations</div>
+        <div class="panel-tab">Review</div>
+      </div>
+      <div class="panel-body">
+        <div class="panel-btn">Find Citations</div>
+        <div class="mock-card">
+          <div class="mock-title">Attention Is All You Need</div>
+          <div class="mock-meta">Vaswani et al. &nbsp; 2017 &nbsp; 120k cit. &nbsp; <span class="mock-score">95/100</span></div>
+          <div class="mock-abstract">The dominant sequence transduction models are based on complex recurrent or convolutional neural networks...</div>
+        </div>
+        <div class="mock-card">
+          <div class="mock-title">BERT: Pre-training of Deep Bidirectional Transformers</div>
+          <div class="mock-meta">Devlin et al. &nbsp; 2019 &nbsp; 85k cit. &nbsp; <span class="mock-score">88/100</span></div>
+          <div class="mock-abstract">We introduce a new language representation model called BERT, which stands for...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

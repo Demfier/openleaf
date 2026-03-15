@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "OpenLeaf - Citation Search & Paper Review for Overleaf",
+  "version": "0.1.0",
+  "description": "AI-powered citation search and paper review for Overleaf. Find relevant papers to cite, paragraph by paragraph.",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://www.overleaf.com/*",
+    "https://api.semanticscholar.org/*",
+    "https://api.openalex.org/*",
+    "https://google.serper.dev/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*"
+  ],
+  "background": {
+    "service_worker": "dist/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.overleaf.com/project/*"],
+      "js": ["dist/content.js"],
+      "css": ["src/content/style.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "options_ui": {
+    "page": "public/options.html",
+    "open_in_tab": true
+  },
+  "icons": {
+    "16": "public/icons/icon16.png",
+    "48": "public/icons/icon48.png",
+    "128": "public/icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["dist/page-bridge.js"],
+      "matches": ["https://www.overleaf.com/*"]
+    }
+  ],
+  "action": {
+    "default_icon": {
+      "16": "public/icons/icon16.png",
+      "48": "public/icons/icon48.png"
+    },
+    "default_title": "OpenLeaf - Citation Search & Paper Review"
+  }
+}

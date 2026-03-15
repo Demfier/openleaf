@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 440px;
+    height: 280px;
+    background: #1b222c;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    text-align: center;
+    padding: 32px;
+  }
+  .icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    background: #4f9c45;
+    border-radius: 50%;
+  }
+  .icon svg { width: 32px; height: 32px; }
+  .title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #4f9c45;
+    letter-spacing: -0.5px;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #9ca3af;
+    line-height: 1.5;
+    max-width: 320px;
+  }
+  .badges {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    border: 1px solid #3c4251;
+    color: #c5c8cf;
+    background: #252b35;
+  }
+  .badge-green { border-color: #4f9c45; color: #4f9c45; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <rect x="4" y="15" width="16" height="3.5" rx="0.8" fill="white"/>
+        <rect x="5" y="10.5" width="16" height="3.5" rx="0.8" fill="white"/>
+        <rect x="6" y="6" width="16" height="3.5" rx="0.8" fill="white"/>
+      </svg>
+    </div>
+    <div class="title">OpenLeaf</div>
+    <div class="subtitle">AI-powered citation search & paper review for Overleaf</div>
+    <div class="badges">
+      <span class="badge badge-green">Citations</span>
+      <span class="badge badge-green">Review</span>
+      <span class="badge">Open Source</span>
+    </div>
+  </div>
+</body>
+</html>

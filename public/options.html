@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>OpenLeaf Settings</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f0f23;
+      color: #e0e0e0;
+      padding: 40px;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: #4ade80;
+      margin-bottom: 8px;
+      font-size: 24px;
+    }
+
+    .subtitle {
+      color: #888;
+      margin-bottom: 32px;
+      font-size: 14px;
+    }
+
+    .section {
+      margin-bottom: 28px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #60a5fa;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      color: #ccc;
+      margin-bottom: 4px;
+    }
+
+    .hint {
+      font-size: 11px;
+      color: #666;
+      margin-top: 2px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #2a2a4a;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      font-size: 13px;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: #4ade80;
+    }
+
+    .actions {
+      margin-top: 24px;
+    }
+
+    button {
+      padding: 10px 24px;
+      border-radius: 6px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-save {
+      background: #138a07;
+      color: white;
+    }
+
+    .btn-save:hover {
+      background: #0f6e05;
+    }
+
+    .status {
+      margin-top: 12px;
+      font-size: 13px;
+      color: #4ade80;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>OpenLeaf Settings</h1>
+  <p class="subtitle">Configure API keys and LLM backend for citation search.</p>
+
+  <div class="section">
+    <div class="section-title">LLM Backend (for ranking and reviewing)</div>
+    <div class="field">
+      <label for="llmBaseUrl">Base URL</label>
+      <input type="text" id="llmBaseUrl" placeholder="http://localhost:11434/v1">
+      <div class="hint">Ollama: http://localhost:11434/v1 | OpenRouter: https://openrouter.ai/api/v1</div>
+    </div>
+    <div class="field">
+      <label for="llmModel">Model</label>
+      <input type="text" id="llmModel" placeholder="llama3.1:8b">
+      <div class="hint">Ollama: llama3.1:8b | OpenRouter: anthropic/claude-sonnet-4-20250514</div>
+    </div>
+    <div class="field">
+      <label for="llmApiKey">API Key</label>
+      <input type="password" id="llmApiKey" placeholder="Not needed for Ollama">
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Paper Search APIs</div>
+    <div class="field">
+      <label for="semanticScholarApiKey">Semantic Scholar API Key</label>
+      <input type="password" id="semanticScholarApiKey" placeholder="Optional — works without but rate-limited">
+    </div>
+    <div class="field">
+      <label for="serperApiKey">Serper API Key (Google Scholar)</label>
+      <input type="password" id="serperApiKey" placeholder="Optional — skipped if empty">
+    </div>
+    <div class="field">
+      <label for="openAlexEmail">OpenAlex Email</label>
+      <input type="email" id="openAlexEmail" placeholder="Optional — gets better rate limits">
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Search Parameters</div>
+    <div class="field">
+      <label for="scoreThreshold">Minimum relevance score (0-100)</label>
+      <input type="number" id="scoreThreshold" min="0" max="100" value="60">
+    </div>
+    <div class="field">
+      <label for="maxResultsPerSource">Results per source</label>
+      <input type="number" id="maxResultsPerSource" min="1" max="30" value="10">
+    </div>
+    <div class="field">
+      <label for="maxResultsPerParagraph">Max suggestions per paragraph</label>
+      <input type="number" id="maxResultsPerParagraph" min="1" max="20" value="5">
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn-save" id="save">Save Settings</button>
+    <div class="status" id="status">Settings saved!</div>
+  </div>
+
+  <script src="../dist/options.js"></script>
+</body>
+
+</html>
