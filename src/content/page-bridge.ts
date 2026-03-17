@@ -78,6 +78,37 @@ window.addEventListener('message', (event) => {
     window.postMessage({ source: 'openleaf-page', action: 'editorText', id, text }, window.location.origin)
   }
 
+  if (action === 'getBibText') {
+    const openDocName = (window as any).overleaf?.unstable?.store?.get?.('editor.open_doc_name')
+
+    // If the bib file is already open, read it directly
+    if (openDocName && openDocName.endsWith('.bib')) {
+      const view = getEditorView()
+      const text = view ? view.state.doc.toString() : null
+      window.postMessage({ source: 'openleaf-page', action: 'bibText', id, text }, window.location.origin)
+      return
+    }
+
+    const bibEl = findBibFileElement()
+    if (!bibEl) {
+      window.postMessage({ source: 'openleaf-page', action: 'bibText', id, text: null }, window.location.origin)
+      return
+    }
+
+    bibEl.click()
+    setTimeout(() => {
+      const view = getEditorView()
+      const text = view ? view.state.doc.toString() : null
+      if (openDocName) {
+        const origEl = findFileElement(openDocName)
+        if (origEl) origEl.click()
+      }
+      setTimeout(() => {
+        window.postMessage({ source: 'openleaf-page', action: 'bibText', id, text }, window.location.origin)
+      }, 400)
+    }, 800)
+  }
+
   if (action === 'appendToBibFile') {
     const { bibtex } = event.data
 

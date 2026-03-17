@@ -41,6 +41,46 @@ async function getEditorText(): Promise<string | null> {
   return resp.text
 }
 
+async function getBibText(): Promise<string | null> {
+  const resp = await sendToPage<{ text: string | null }>('getBibText')
+  return resp.text
+}
+
+function parseExistingBibEntries(bibText: string): { dois: Set<string>; arxivIds: Set<string>; titles: Set<string> } {
+  const dois = new Set<string>()
+  const arxivIds = new Set<string>()
+  const titles = new Set<string>()
+
+  for (const m of bibText.matchAll(/doi\s*=\s*\{([^}]+)\}/gi))
+    dois.add(m[1].toLowerCase().trim())
+  for (const m of bibText.matchAll(/doi\s*=\s*"([^"]+)"/gi))
+    dois.add(m[1].toLowerCase().trim())
+
+  for (const m of bibText.matchAll(/eprint\s*=\s*\{([^}]+)\}/gi))
+    arxivIds.add(m[1].toLowerCase().replace(/v\d+$/, '').trim())
+  for (const m of bibText.matchAll(/arxiv\.org\/abs\/([^\s"{}]+)/gi))
+    arxivIds.add(m[1].toLowerCase().replace(/v\d+$/, '').trim())
+
+  for (const m of bibText.matchAll(/title\s*=\s*\{([^}]+)\}/gi))
+    titles.add(m[1].toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 60))
+  for (const m of bibText.matchAll(/title\s*=\s*"([^"]+)"/gi))
+    titles.add(m[1].toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 60))
+
+  return { dois, arxivIds, titles }
+}
+
+function isAlreadyInBib(
+  paper: RankedPaper,
+  dois: Set<string>,
+  arxivIds: Set<string>,
+  titles: Set<string>
+): boolean {
+  if (paper.doi && dois.has(paper.doi.toLowerCase().trim())) return true
+  if (paper.arxivId && arxivIds.has(paper.arxivId.toLowerCase().replace(/v\d+$/, '').trim())) return true
+  const normTitle = paper.title.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 60)
+  return titles.has(normTitle)
+}
+
 async function appendToBibFile(bibtex: string): Promise<boolean> {
   const resp = await sendToPage<{ success: boolean; reason?: string }>(
     'appendToBibFile',
@@ -102,6 +142,24 @@ async function loadCache(): Promise<boolean> {
 async function clearCache(): Promise<void> {
   const key = getCacheKey()
   await chrome.storage.local.remove(key)
+}
+
+// --- Bib Cache ---
+
+let existingBibEntries = {
+  dois: new Set<string>(),
+  arxivIds: new Set<string>(),
+  titles: new Set<string>(),
+}
+
+// Stored so runSearch() can await it on the first click if still in progress
+let bibCachePromise: Promise<void> | null = null
+
+async function refreshBibCache(): Promise<void> {
+  try {
+    const bibText = await getBibText()
+    if (bibText) existingBibEntries = parseExistingBibEntries(bibText)
+  } catch { /* ignore */ }
 }
 
 // --- UI State ---
@@ -288,6 +346,9 @@ function bindCitationEvents(): void {
 
       const added = await appendToBibFile(suggestion.bibtex)
       addedKeys.add(suggestion.citeKey)
+      if (suggestion.doi) existingBibEntries.dois.add(suggestion.doi.toLowerCase().trim())
+      if (suggestion.arxivId) existingBibEntries.arxivIds.add(suggestion.arxivId.toLowerCase().replace(/v\d+$/, '').trim())
+      existingBibEntries.titles.add(suggestion.title.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 60))
       saveCache()
       if (!added) {
         errorMessage = 'BibTeX copied to clipboard (no .bib file found). Paste it manually.'
@@ -468,6 +529,12 @@ async function runSearch(): Promise<void> {
   progressText = 'Reading document...'
   renderPanel()
 
+  // On the first click, wait for the bib cache to finish loading
+  if (bibCachePromise) {
+    await bibCachePromise
+    bibCachePromise = null
+  }
+
   try {
     const text = await getEditorText()
     if (!text) {
@@ -491,8 +558,13 @@ async function runSearch(): Promise<void> {
 
       if (msg.type === 'PARAGRAPH_RESULT') {
         if (msg.result) {
-          currentResults = [...currentResults, msg.result]
-          saveCache()
+          const suggestions = msg.result.suggestions.filter(
+            (s: RankedPaper) => !isAlreadyInBib(s, existingBibEntries.dois, existingBibEntries.arxivIds, existingBibEntries.titles)
+          )
+          if (suggestions.length > 0) {
+            currentResults = [...currentResults, { ...msg.result, suggestions }]
+            saveCache()
+          }
         }
         progressText = `Processing ${msg.completedCount}/${msg.totalParagraphs} paragraphs...`
         searchStatus = 'loading'
@@ -550,23 +622,25 @@ async function init(): Promise<void> {
   // Load cached results
   const hasCached = await loadCache()
 
+  function onEditorReady() {
+    injectFAB()
+    if (hasCached) createPanel()
+    // Start loading bib cache immediately; small delay ensures page bridge is ready
+    bibCachePromise = new Promise<void>(resolve =>
+      setTimeout(() => refreshBibCache().finally(resolve), 500)
+    )
+  }
+
   const observer = new MutationObserver((_mutations, obs) => {
     if (document.querySelector('.cm-editor')) {
       obs.disconnect()
-      injectFAB()
-      // If we have cached results, auto-show the panel
-      if (hasCached) {
-        createPanel()
-      }
+      onEditorReady()
     }
   })
   observer.observe(document.body, { childList: true, subtree: true })
 
   if (document.querySelector('.cm-editor')) {
-    injectFAB()
-    if (hasCached) {
-      createPanel()
-    }
+    onEditorReady()
   }
 }
 
