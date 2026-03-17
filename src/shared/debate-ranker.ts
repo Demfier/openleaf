@@ -72,6 +72,50 @@ function heuristicScore(paper: Paper, maxCitations: number): number {
   return Math.round(0.7 * posScore + 0.3 * citScore)
 }
 
+// Max papers per LLM batch — keeps each request within timeout for local 8B models
+const BATCH_SIZE = 10
+
+async function rankBatch(
+  paragraphText: string,
+  batch: Paper[],
+  batchOffset: number,
+  settings: ExtensionSettings,
+  fullDocText?: string
+): Promise<Map<string, { score: number; forArg: string; againstArg: string }>> {
+  const prompt = buildUserPrompt(paragraphText, batch, fullDocText)
+
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  if (settings.llmApiKey) headers['Authorization'] = `Bearer ${settings.llmApiKey}`
+
+  const resp = await fetch(`${settings.llmBaseUrl}/chat/completions`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      model: settings.llmModel,
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0.3,
+    }),
+    signal: AbortSignal.timeout(60000),
+  })
+
+  if (!resp.ok) throw new Error(`LLM returned ${resp.status}`)
+
+  const data = await resp.json()
+  const content = data?.choices?.[0]?.message?.content || ''
+
+  // Remap paper_0..N indices back to global indices
+  const batchMap = parseResponse(content)
+  const globalMap = new Map<string, { score: number; forArg: string; againstArg: string }>()
+  for (const [key, val] of batchMap) {
+    const localIdx = parseInt(key.replace('paper_', ''), 10)
+    globalMap.set(`paper_${batchOffset + localIdx}`, val)
+  }
+  return globalMap
+}
+
 export async function rankPapers(
   paragraphText: string,
   papers: Paper[],
@@ -81,37 +125,16 @@ export async function rankPapers(
   if (!papers.length) return []
 
   const existingKeys = new Set<string>()
+  const maxCit = Math.max(...papers.map(p => p.citationCount || 0), 1)
 
-  // Try LLM ranking
   try {
-    const prompt = buildUserPrompt(paragraphText, papers, fullDocText)
-
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
+    // Process all papers through the LLM in sequential batches
+    const scoreMap = new Map<string, { score: number; forArg: string; againstArg: string }>()
+    for (let i = 0; i < papers.length; i += BATCH_SIZE) {
+      const batch = papers.slice(i, i + BATCH_SIZE)
+      const batchMap = await rankBatch(paragraphText, batch, i, settings, fullDocText)
+      for (const [k, v] of batchMap) scoreMap.set(k, v)
     }
-    if (settings.llmApiKey) {
-      headers['Authorization'] = `Bearer ${settings.llmApiKey}`
-    }
-
-    const resp = await fetch(`${settings.llmBaseUrl}/chat/completions`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        model: settings.llmModel,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: prompt },
-        ],
-        temperature: 0.3,
-      }),
-      signal: AbortSignal.timeout(60000),
-    })
-
-    if (!resp.ok) throw new Error(`LLM returned ${resp.status}`)
-
-    const data = await resp.json()
-    const content = data?.choices?.[0]?.message?.content || ''
-    const scoreMap = parseResponse(content)
 
     return papers.map((paper, i) => {
       const result = scoreMap.get(`paper_${i}`)
@@ -128,28 +151,14 @@ export async function rankPapers(
         }
       }
 
-      const maxCit = Math.max(...papers.map(p => p.citationCount || 0))
-      return {
-        ...paper,
-        score: heuristicScore(paper, maxCit),
-        reasoning: null,
-        bibtex,
-        citeKey,
-      }
+      return { ...paper, score: heuristicScore(paper, maxCit), reasoning: null, bibtex, citeKey }
     })
   } catch (err) {
     console.warn('[OpenLeaf] LLM ranking failed, using heuristic fallback:', err)
-    const maxCit = Math.max(...papers.map(p => p.citationCount || 0), 1)
     return papers.map(paper => {
       const { bibtex, citeKey } = formatBibtex(paper, existingKeys)
       existingKeys.add(citeKey)
-      return {
-        ...paper,
-        score: heuristicScore(paper, maxCit),
-        reasoning: null,
-        bibtex,
-        citeKey,
-      }
+      return { ...paper, score: heuristicScore(paper, maxCit), reasoning: null, bibtex, citeKey }
     })
   }
 }
