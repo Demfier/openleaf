@@ -236,7 +236,10 @@ function renderCitationsTab(): string {
     <div class="openleaf-toolbar">
       <button class="openleaf-btn openleaf-btn-primary" id="openleaf-search"
         ${searchStatus === 'loading' ? 'disabled' : ''}>
-        ${searchStatus === 'loading' ? 'Searching...' : 'Find Citations'}
+        ${searchStatus === 'loading'
+          ? 'Searching...'
+          : '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Search'
+        }
       </button>
       ${searchStatus === 'success' ? '<button class="openleaf-btn" id="openleaf-clear">Clear</button>' : ''}
     </div>
@@ -446,7 +449,7 @@ function renderEmptyState(): string {
     <div class="openleaf-empty">
       <div class="openleaf-empty-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="48" height="48"><rect x="4" y="15" width="16" height="3.5" rx="0.8" fill="#4f9c45"/><rect x="5" y="10.5" width="16" height="3.5" rx="0.8" fill="#5aad50"/><rect x="6" y="6" width="16" height="3.5" rx="0.8" fill="#6bbe61"/></svg></div>
       <div class="openleaf-empty-title">Find relevant papers to cite</div>
-      <div class="openleaf-empty-desc">Click "Find Citations" to analyze the current document and discover papers paragraph by paragraph.</div>
+      <div class="openleaf-empty-desc">Click "Search" to analyze the current document and discover papers paragraph by paragraph.</div>
     </div>
   `
 }

@@ -134,6 +134,10 @@
   border-color: transparent;
   color: white;
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 .openleaf-btn-primary:hover {
   background: #438a3a;
