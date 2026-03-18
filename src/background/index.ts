@@ -2,6 +2,7 @@ import {
   searchSemanticScholar,
   searchOpenAlex,
   searchSerper,
+  enrichArxivPapers,
 } from '@shared/api-clients'
 import { deduplicate } from '@shared/deduplicator'
 import { rankPapers } from '@shared/debate-ranker'
@@ -52,6 +53,7 @@ async function processParagraph(
   if (!allPapers.length) return null
 
   const unique = deduplicate(allPapers)
+  await enrichArxivPapers(unique, settings)
   const ranked = await rankPapers(query, unique, settings, fullDocText)
 
   const filtered = ranked

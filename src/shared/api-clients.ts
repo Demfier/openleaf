@@ -98,6 +98,35 @@ export async function searchOpenAlex(
   }
 }
 
+// --- arXiv enrichment ---
+// For papers that have an arXiv ID but no author data (typically from Serper),
+// fetch full metadata from Semantic Scholar's paper lookup endpoint.
+
+export async function enrichArxivPapers(papers: Paper[], settings: ExtensionSettings): Promise<void> {
+  const toEnrich = papers.filter(p => p.arxivId && (!p.authors || p.authors.length === 0))
+  if (!toEnrich.length) return
+
+  const headers: Record<string, string> = {}
+  if (settings.semanticScholarApiKey) headers['x-api-key'] = settings.semanticScholarApiKey
+
+  await Promise.allSettled(toEnrich.map(async paper => {
+    try {
+      const id = paper.arxivId!.replace(/v\d+$/, '')
+      const resp = await fetch(
+        `https://api.semanticscholar.org/graph/v1/paper/arXiv:${id}?fields=title,authors,year,venue,publicationVenue,externalIds`,
+        { headers, signal: AbortSignal.timeout(5000) }
+      )
+      if (!resp.ok) return
+      const data = await resp.json()
+
+      if (data.authors?.length) paper.authors = data.authors.map((a: any) => a.name)
+      if (!paper.year && data.year) paper.year = data.year
+      if (!paper.venue) paper.venue = data.publicationVenue?.name || data.venue || null
+      if (!paper.doi && data.externalIds?.DOI) paper.doi = data.externalIds.DOI
+    } catch { /* ignore */ }
+  }))
+}
+
 // --- Serper (Google Scholar) ---
 
 export async function searchSerper(
