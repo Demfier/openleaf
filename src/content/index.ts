@@ -96,7 +96,10 @@ async function appendToBibFile(bibtex: string): Promise<boolean> {
 // --- Cache ---
 
 function getCacheKey(): string {
-  // Use the project URL path as cache key (e.g. "/project/abc123")
+  // Prism uses query param ?u=UUID as project identifier
+  const prismProject = new URLSearchParams(window.location.search).get('u')
+  if (prismProject) return `openleaf_cache_prism_${prismProject}`
+  // Overleaf uses the URL path (e.g. "/project/abc123")
   return `openleaf_cache_${window.location.pathname}`
 }
 
@@ -632,14 +635,14 @@ async function init(): Promise<void> {
   }
 
   const observer = new MutationObserver((_mutations, obs) => {
-    if (document.querySelector('.cm-editor')) {
+    if (document.querySelector('.cm-editor, .monaco-editor')) {
       obs.disconnect()
       onEditorReady()
     }
   })
   observer.observe(document.body, { childList: true, subtree: true })
 
-  if (document.querySelector('.cm-editor')) {
+  if (document.querySelector('.cm-editor, .monaco-editor')) {
     onEditorReady()
   }
 }

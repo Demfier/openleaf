@@ -1,6 +1,12 @@
 // This script runs in the PAGE context (not the content script's isolated world).
-// It can access CodeMirror's EditorView and Overleaf's internal APIs.
+// It can access CodeMirror/Monaco and Overleaf/Prism internal APIs.
 // Communicates with the content script via window.postMessage.
+
+function isPrism(): boolean {
+  return window.location.hostname === 'prism.openai.com'
+}
+
+// --- Overleaf (CodeMirror 6) helpers ---
 
 function getEditorView(): any {
   // Method 1: CM6 DOM property
@@ -15,15 +21,11 @@ function getEditorView(): any {
 }
 
 function findBibFileElement(): HTMLElement | null {
-  // The file tree in Overleaf uses role="treeitem" with nested buttons/spans.
-  // We need to find any element whose visible text is exactly "references.bib"
-  // or ends with ".bib"
   const treeItems = document.querySelectorAll('[role="treeitem"]')
   for (const item of treeItems) {
     const nameEl = item.querySelector('button, span, .file-tree-name-button')
     const text = nameEl?.textContent?.trim()
     if (text && text.endsWith('.bib')) {
-      // Click the treeitem itself or its first interactive child
       const clickTarget = (item.querySelector('button') || nameEl || item) as HTMLElement
       return clickTarget
     }
@@ -51,8 +53,7 @@ function findBibFileElement(): HTMLElement | null {
     }
   )
 
-  const match = walker.nextNode() as HTMLElement | null
-  return match
+  return walker.nextNode() as HTMLElement | null
 }
 
 function findFileElement(name: string): HTMLElement | null {
@@ -66,22 +67,111 @@ function findFileElement(name: string): HTMLElement | null {
   return null
 }
 
+// --- Prism (Monaco) helpers ---
+
+function findPrismBibModel(): any | null {
+  const monaco = (window as any).monaco
+  if (!monaco?.editor) return null
+  const models: any[] = monaco.editor.getModels()
+  return models.find(m =>
+    /@(article|book|inproceedings|incollection|misc|phdthesis|techreport|mastersthesis|unpublished)/i
+      .test(m.getValue())
+  ) ?? null
+}
+
+function findPrismFileButton(name: string): HTMLElement | null {
+  for (const item of document.querySelectorAll('[role="treeitem"]')) {
+    const span = item.querySelector('span.block')
+    if (span?.textContent?.trim() === name) {
+      return item.querySelector('button[data-file-row-click="true"]') as HTMLElement
+    }
+  }
+  return null
+}
+
+function findPrismBibFileButton(): HTMLElement | null {
+  for (const item of document.querySelectorAll('[role="treeitem"]')) {
+    const span = item.querySelector('span.block')
+    if (span?.textContent?.trim().endsWith('.bib')) {
+      return item.querySelector('button[data-file-row-click="true"]') as HTMLElement
+    }
+  }
+  return null
+}
+
+function prismApplyBibEdit(bibModel: any, bibtex: string): void {
+  const lineCount = bibModel.getLineCount()
+  const colCount = bibModel.getLineMaxColumn(lineCount)
+  bibModel.applyEdits([{
+    range: { startLineNumber: lineCount, startColumn: colCount, endLineNumber: lineCount, endColumn: colCount },
+    text: '\n\n' + bibtex + '\n',
+    forceMoveMarkers: true,
+  }])
+}
+
+// --- Message handler ---
+
 window.addEventListener('message', (event) => {
   if (event.source !== window) return
   if (event.data?.source !== 'openleaf-content') return
 
   const { action, id } = event.data
 
+  // ── getEditorText ──────────────────────────────────────────────────────────
+
   if (action === 'getEditorText') {
+    if (isPrism()) {
+      const monaco = (window as any).monaco
+      const models: any[] = monaco?.editor?.getModels() ?? []
+      const texModel = models.find(m => {
+        const v = m.getValue()
+        return v.includes('\\documentclass') || v.includes('\\begin{document}')
+      })
+      const text = texModel?.getValue()
+        ?? monaco?.editor?.getEditors()?.[0]?.getModel()?.getValue()
+        ?? null
+      window.postMessage({ source: 'openleaf-page', action: 'editorText', id, text }, window.location.origin)
+      return
+    }
+
+    // Overleaf
     const view = getEditorView()
     const text = view ? view.state.doc.toString() : null
     window.postMessage({ source: 'openleaf-page', action: 'editorText', id, text }, window.location.origin)
   }
 
+  // ── getBibText ─────────────────────────────────────────────────────────────
+
   if (action === 'getBibText') {
+    if (isPrism()) {
+      // Monaco keeps all models in memory — try direct access first (no file switch)
+      const bibModel = findPrismBibModel()
+      if (bibModel) {
+        window.postMessage({ source: 'openleaf-page', action: 'bibText', id, text: bibModel.getValue() }, window.location.origin)
+        return
+      }
+
+      // Model not loaded yet — click the bib file to load it, then switch back
+      const currentFile = new URLSearchParams(window.location.search).get('m')
+      const bibBtn = findPrismBibFileButton()
+      if (!bibBtn) {
+        window.postMessage({ source: 'openleaf-page', action: 'bibText', id, text: null }, window.location.origin)
+        return
+      }
+      bibBtn.click()
+      setTimeout(() => {
+        const text = findPrismBibModel()?.getValue() ?? null
+        if (currentFile) findPrismFileButton(currentFile)?.click()
+        setTimeout(() => {
+          window.postMessage({ source: 'openleaf-page', action: 'bibText', id, text }, window.location.origin)
+        }, 400)
+      }, 800)
+      return
+    }
+
+    // Overleaf
     const openDocName = (window as any).overleaf?.unstable?.store?.get?.('editor.open_doc_name')
 
-    // If the bib file is already open, read it directly
     if (openDocName && openDocName.endsWith('.bib')) {
       const view = getEditorView()
       const text = view ? view.state.doc.toString() : null
@@ -99,61 +189,67 @@ window.addEventListener('message', (event) => {
     setTimeout(() => {
       const view = getEditorView()
       const text = view ? view.state.doc.toString() : null
-      if (openDocName) {
-        const origEl = findFileElement(openDocName)
-        if (origEl) origEl.click()
-      }
+      if (openDocName) findFileElement(openDocName)?.click()
       setTimeout(() => {
         window.postMessage({ source: 'openleaf-page', action: 'bibText', id, text }, window.location.origin)
       }, 400)
     }, 800)
   }
 
+  // ── appendToBibFile ────────────────────────────────────────────────────────
+
   if (action === 'appendToBibFile') {
     const { bibtex } = event.data
 
-    // Remember which file is currently open
-    const openDocName = (window as any).overleaf?.unstable?.store?.get?.('editor.open_doc_name')
-
-    const bibEl = findBibFileElement()
-    if (!bibEl) {
-      window.postMessage({
-        source: 'openleaf-page', action: 'bibAppendResult', id,
-        success: false, reason: 'no-bib-file',
-      }, window.location.origin)
-      return
-    }
-
-    // Click the .bib file to open it in the editor
-    bibEl.click()
-
-    // Wait for the editor to switch to the bib file
-    setTimeout(() => {
-      const view = getEditorView()
-      if (!view) {
-        window.postMessage({
-          source: 'openleaf-page', action: 'bibAppendResult', id,
-          success: false, reason: 'editor-not-found',
-        }, window.location.origin)
+    if (isPrism()) {
+      // Try direct model edit — no file switching needed if model is in memory
+      let bibModel = findPrismBibModel()
+      if (bibModel) {
+        prismApplyBibEdit(bibModel, bibtex)
+        window.postMessage({ source: 'openleaf-page', action: 'bibAppendResult', id, success: true }, window.location.origin)
         return
       }
 
-      // Append bibtex at the end of the document
-      const docLength = view.state.doc.length
-      view.dispatch({
-        changes: { from: docLength, insert: '\n\n' + bibtex + '\n' },
-      })
-
-      // Switch back to the original file
+      // Model not loaded — switch to bib file, edit, switch back
+      const currentFile = new URLSearchParams(window.location.search).get('m')
+      const bibBtn = findPrismBibFileButton()
+      if (!bibBtn) {
+        window.postMessage({ source: 'openleaf-page', action: 'bibAppendResult', id, success: false, reason: 'no-bib-file' }, window.location.origin)
+        return
+      }
+      bibBtn.click()
       setTimeout(() => {
-        if (openDocName) {
-          const origEl = findFileElement(openDocName)
-          if (origEl) origEl.click()
-        }
-        window.postMessage({
-          source: 'openleaf-page', action: 'bibAppendResult', id,
-          success: true,
-        }, window.location.origin)
+        bibModel = findPrismBibModel()
+        if (bibModel) prismApplyBibEdit(bibModel, bibtex)
+        if (currentFile) findPrismFileButton(currentFile)?.click()
+        setTimeout(() => {
+          window.postMessage({ source: 'openleaf-page', action: 'bibAppendResult', id, success: !!bibModel, reason: bibModel ? undefined : 'no-bib-file' }, window.location.origin)
+        }, 400)
+      }, 800)
+      return
+    }
+
+    // Overleaf
+    const openDocName = (window as any).overleaf?.unstable?.store?.get?.('editor.open_doc_name')
+    const bibEl = findBibFileElement()
+    if (!bibEl) {
+      window.postMessage({ source: 'openleaf-page', action: 'bibAppendResult', id, success: false, reason: 'no-bib-file' }, window.location.origin)
+      return
+    }
+
+    bibEl.click()
+    setTimeout(() => {
+      const view = getEditorView()
+      if (!view) {
+        window.postMessage({ source: 'openleaf-page', action: 'bibAppendResult', id, success: false, reason: 'editor-not-found' }, window.location.origin)
+        return
+      }
+      const docLength = view.state.doc.length
+      view.dispatch({ changes: { from: docLength, insert: '\n\n' + bibtex + '\n' } })
+
+      setTimeout(() => {
+        if (openDocName) findFileElement(openDocName)?.click()
+        window.postMessage({ source: 'openleaf-page', action: 'bibAppendResult', id, success: true }, window.location.origin)
       }, 400)
     }, 800)
   }

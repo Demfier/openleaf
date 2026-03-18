@@ -6,6 +6,7 @@
   "permissions": ["storage"],
   "host_permissions": [
     "https://www.overleaf.com/*",
+    "https://prism.openai.com/*",
     "https://api.semanticscholar.org/*",
     "https://api.openalex.org/*",
     "https://google.serper.dev/*",
@@ -18,6 +19,12 @@
   "content_scripts": [
     {
       "matches": ["https://www.overleaf.com/project/*"],
+      "js": ["dist/content.js"],
+      "css": ["src/content/style.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://prism.openai.com/*"],
       "js": ["dist/content.js"],
       "css": ["src/content/style.css"],
       "run_at": "document_idle"
@@ -35,7 +42,7 @@
   "web_accessible_resources": [
     {
       "resources": ["dist/page-bridge.js"],
-      "matches": ["https://www.overleaf.com/*"]
+      "matches": ["https://www.overleaf.com/*", "https://prism.openai.com/*"]
     }
   ],
   "action": {
