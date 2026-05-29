@@ -13,8 +13,12 @@
   "scripts": {
     "dev": "npm run build && chokidar 'src/**/*' -c 'npm run build:fast'",
     "build": "tsc && npm run build:fast",
-    "build:fast": "rm -rf dist && ENTRY=background vite build && ENTRY=content vite build && ENTRY=options vite build && ENTRY=page-bridge vite build",
-    "typecheck": "tsc --noEmit"
+    "build:fast": "rm -rf dist && ENTRY=background vite build && ENTRY=content vite build && ENTRY=options vite build && ENTRY=page-bridge vite build && cp src/content/style.css dist/content.css",
+    "typecheck": "tsc --noEmit",
+    "package": "npm run build && node scripts/package.mjs chromium",
+    "package:chromium": "npm run build && node scripts/package.mjs chromium",
+    "package:safari": "npm run build && node scripts/package.mjs safari",
+    "package:all": "npm run build && node scripts/package.mjs chromium safari"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.287",

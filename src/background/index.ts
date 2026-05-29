@@ -1,3 +1,4 @@
+import { browser } from '@shared/browser'
 import {
   searchSemanticScholar,
   searchOpenAlex,
@@ -15,7 +16,7 @@ import {
 } from '@shared/review-prompts'
 
 async function getSettings(): Promise<ExtensionSettings> {
-  const { settings } = await chrome.storage.sync.get('settings')
+  const { settings } = await browser.storage.sync.get('settings')
   return {
     llmBaseUrl: 'http://localhost:11434/v1',
     llmApiKey: '',
@@ -82,7 +83,9 @@ let keepAliveInterval: ReturnType<typeof setInterval> | null = null
 function startKeepAlive() {
   stopKeepAlive()
   keepAliveInterval = setInterval(() => {
-    chrome.runtime.getPlatformInfo(() => {})
+    // Pinging any extension API resets the service-worker idle timer.
+    // Use the promise form so it works across Chrome/Opera and Safari/Firefox.
+    browser.runtime.getPlatformInfo().catch(() => {})
   }, 20000)
 }
 
@@ -94,7 +97,7 @@ function stopKeepAlive() {
 }
 
 // Port-based streaming for paragraph-by-paragraph results
-chrome.runtime.onConnect.addListener(port => {
+browser.runtime.onConnect.addListener(port => {
   if (port.name !== 'citation-search') return
 
   let disconnected = false
@@ -172,7 +175,7 @@ chrome.runtime.onConnect.addListener(port => {
 })
 
 // Port for paper review (streamed)
-chrome.runtime.onConnect.addListener(port => {
+browser.runtime.onConnect.addListener(port => {
   if (port.name !== 'paper-review') return
 
   let disconnected = false
@@ -265,7 +268,7 @@ chrome.runtime.onConnect.addListener(port => {
 })
 
 // Simple message handler for settings
-chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === 'GET_SETTINGS') {
     getSettings().then(settings =>
       sendResponse({ type: 'SETTINGS_RESPONSE', settings })
@@ -274,8 +277,8 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
 })
 
-chrome.runtime.onInstalled.addListener(details => {
+browser.runtime.onInstalled.addListener(details => {
   if (details.reason === 'install') {
-    chrome.runtime.openOptionsPage()
+    browser.runtime.openOptionsPage()
   }
 })

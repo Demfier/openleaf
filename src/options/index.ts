@@ -1,3 +1,4 @@
+import { browser } from '@shared/browser'
 import { DEFAULT_SETTINGS, type ExtensionSettings } from '@shared/types'
 
 const FIELDS: (keyof ExtensionSettings)[] = [
@@ -19,7 +20,7 @@ const NUM_FIELDS = new Set([
 ])
 
 async function loadSettings(): Promise<void> {
-  const { settings = {} } = await chrome.storage.sync.get('settings')
+  const { settings = {} } = await browser.storage.sync.get('settings')
   const merged = { ...DEFAULT_SETTINGS, ...settings }
 
   for (const field of FIELDS) {
@@ -38,7 +39,7 @@ async function saveSettings(): Promise<void> {
       : el.value
   }
 
-  await chrome.storage.sync.set({ settings })
+  await browser.storage.sync.set({ settings })
 
   const status = document.getElementById('status')!
   status.style.display = 'block'

@@ -1,3 +1,4 @@
+import { browser } from '@shared/browser'
 import { splitIntoParagraphs } from '@shared/keyword-extractor'
 import type { ParagraphResult, RankedPaper } from '@shared/types'
 
@@ -10,7 +11,7 @@ let msgId = 0
 
 function injectPageBridge(): void {
   const script = document.createElement('script')
-  script.src = chrome.runtime.getURL('dist/page-bridge.js')
+  script.src = browser.runtime.getURL('dist/page-bridge.js')
   ;(document.head || document.documentElement).appendChild(script)
   script.onload = () => script.remove()
 }
@@ -105,7 +106,7 @@ function getCacheKey(): string {
 
 async function saveCache(): Promise<void> {
   const key = getCacheKey()
-  await chrome.storage.local.set({
+  await browser.storage.local.set({
     [key]: {
       results: currentResults,
       addedKeys: [...addedKeys],
@@ -119,7 +120,7 @@ async function saveCache(): Promise<void> {
 
 async function loadCache(): Promise<boolean> {
   const key = getCacheKey()
-  const data = await chrome.storage.local.get(key)
+  const data = await browser.storage.local.get(key)
   const cached = data[key]
   if (!cached) return false
 
@@ -144,7 +145,7 @@ async function loadCache(): Promise<boolean> {
 
 async function clearCache(): Promise<void> {
   const key = getCacheKey()
-  await chrome.storage.local.remove(key)
+  await browser.storage.local.remove(key)
 }
 
 // --- Bib Cache ---
@@ -397,7 +398,7 @@ async function runReview(): Promise<void> {
       throw new Error('Could not read editor content.')
     }
 
-    const port = chrome.runtime.connect({ name: 'paper-review' })
+    const port = browser.runtime.connect({ name: 'paper-review' })
 
     port.onMessage.addListener(msg => {
       if (msg.type === 'REVIEW_STARTED') {
@@ -554,7 +555,7 @@ async function runSearch(): Promise<void> {
       return
     }
 
-    const port = chrome.runtime.connect({ name: 'citation-search' })
+    const port = browser.runtime.connect({ name: 'citation-search' })
 
     port.onMessage.addListener(msg => {
       if (msg.type === 'SEARCH_STARTED') {

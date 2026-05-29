@@ -5,6 +5,11 @@ dist/
 *.zip
 .DS_Store
 .env*
+
+# packaging output (regenerated via `npm run package:*`)
+build/
+web-ext-artifacts/
+safari/
 promo/*.pptx
 promo/~$*
 promo/*.pdf

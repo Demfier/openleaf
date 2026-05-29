@@ -36,31 +36,56 @@
 ### Configure your LLM and API keys
 ![Options page](promo/slide-5.png)
 
+## Browser support
+
+OpenLeaf is a Manifest V3 web extension. A single Chromium build serves **Chrome, Opera, and Edge**; **Safari** is built from the same source through Apple's converter.
+
+| Browser | Supported | How |
+|---------|-----------|-----|
+| Chrome  | ✅ | Web Store, or load unpacked |
+| Opera   | ✅ | Load unpacked, or the Chromium zip |
+| Edge    | ✅ | Load unpacked, or the Chromium zip |
+| Safari 16.4+ | ✅ | Build the Xcode project (macOS, needs Xcode) |
+
 ## Install
 
-### Option 1: Chrome Web Store
+### Chrome / Edge — Web Store
 [openleaf extension link](https://chromewebstore.google.com/detail/openleaf-citation-search/jjcmeicpmfcimamdmchabfpjcljieafk)
 
-### Option 2: Download ZIP (no npm needed)
-1. Download [`openleaf-extension-v0.1.0.zip`](https://github.com/demfier/openleaf/releases/download/v0.1.0/openleaf-extension-v0.1.0.zip) from [Releases](https://github.com/demfier/openleaf/releases)
-2. Unzip it
-3. Go to `chrome://extensions`
-4. Enable **Developer mode** (top right)
-5. Click **Load unpacked**
-6. Select the unzipped folder
+### Chrome / Opera / Edge — load unpacked
+1. Download the latest `openleaf-chromium-vX.Y.Z.zip` from [Releases](https://github.com/demfier/openleaf/releases) and unzip it (or build it yourself — see [From source](#from-source-chromium)).
+2. Open your browser's extensions page:
+   - Chrome / Edge: `chrome://extensions`
+   - Opera: `opera://extensions`
+3. Enable **Developer mode**.
+4. Click **Load unpacked** and select the unzipped folder.
 
-### Option 3: From source
+### Safari (macOS)
+Safari runs the same extension wrapped in a small native app, which you build once with Xcode:
+
 ```bash
 git clone https://github.com/demfier/openleaf.git
 cd openleaf
 npm install
-npm run build
+npm run package:safari    # generates an Xcode project under safari/
 ```
-Then load in Chrome:
-1. Go to `chrome://extensions`
-2. Enable **Developer mode**
-3. Click **Load unpacked**
-4. Select the `openleaf` folder
+
+> Requires the full **Xcode** app, not just the Command Line Tools. If the converter is missing, install Xcode from the App Store, run
+> `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`, then re-run the command.
+
+Then:
+1. Open the generated project in `safari/` with Xcode.
+2. **Product → Run** to build and install the app.
+3. For locally-built (unsigned) extensions, enable Safari's **Develop → Allow Unsigned Extensions**, then turn on **OpenLeaf** under **Safari → Settings → Extensions**.
+
+### From source (Chromium)
+```bash
+git clone https://github.com/demfier/openleaf.git
+cd openleaf
+npm install
+npm run build      # outputs to dist/
+```
+Then load unpacked (see above), selecting the **repo root** folder. To produce a distributable zip instead, run `npm run package:chromium` → `web-ext-artifacts/openleaf-chromium-vX.Y.Z.zip`.
 
 ## Configuration
 
@@ -98,10 +123,13 @@ Works with any OpenAI-compatible API:
 ## Development
 
 ```bash
-npm run dev    # build with watch mode
+npm run dev               # build + watch mode
+npm run build             # one-off build → dist/
+npm run package:chromium  # zip for Chrome/Opera/Edge → web-ext-artifacts/
+npm run package:safari    # Xcode project for Safari → safari/ (needs Xcode)
 ```
 
-After changing code, go to `chrome://extensions` and click the reload button on the extension.
+After changing code, reload the extension from your browser's extensions page (`chrome://extensions` or `opera://extensions`). For Safari, re-run the app from Xcode.
 
 ## Privacy
 

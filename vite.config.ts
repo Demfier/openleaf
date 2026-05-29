@@ -14,7 +14,10 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: false,
-    target: 'chrome120',
+    // Lowest-common-denominator syntax for every target browser.
+    // chrome120 covers Chrome/Edge/Opera (Chromium); safari16 covers Safari's
+    // Manifest V3 support (16.4+). esbuild downlevels to satisfy both.
+    target: ['chrome120', 'safari16'],
     rollupOptions: {
       input: entries[entry],
       output: {
